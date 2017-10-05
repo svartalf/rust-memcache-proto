@@ -1,0 +1,13 @@
+[package]
+name = "memcache-proto"
+description = "Memcached binary protocol"
+version = "0.0.1"
+authors = ["svartalf <self@svartalf.info>"]
+keywords = ["memcached", "memcache", "binary", "protocol"]
+categories = []
+
+[dependencies]
+clippy = { version = "^0.0", optional = true }
+
+[badges]
+travis-ci = { repository = "https://github.com/svartalf/rust-memcache-proto", branch = "master" }
