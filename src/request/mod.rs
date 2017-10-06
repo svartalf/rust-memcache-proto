@@ -224,3 +224,6 @@ impl Default for Request {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

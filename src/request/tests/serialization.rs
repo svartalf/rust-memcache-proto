@@ -1,7 +1,7 @@
 use ::{Request, Command};
 
 #[test]
-fn test_request_get_serialization() {
+fn test_get() {
     let mut request = Request::new(Command::Get);
     request.set_key(Some(b"Hello"));
 
@@ -19,10 +19,11 @@ fn test_request_get_serialization() {
     let mut result: Vec<u8> = vec![];
     request.write(&mut result).unwrap();
     assert_eq!(result, expected);
+    assert_eq!(request.len(), expected.len());
 }
 
 #[test]
-fn test_request_delete_serialization() {
+fn test_delete() {
     let mut request = Request::new(Command::Delete);
     request.set_key(Some(b"Hello"));
 
@@ -40,10 +41,11 @@ fn test_request_delete_serialization() {
     let mut result: Vec<u8> = vec![];
     request.write(&mut result).unwrap();
     assert_eq!(result, expected);
+    assert_eq!(request.len(), expected.len());
 }
 
 #[test]
-fn test_request_quit_serialization() {
+fn test_quit() {
     let request = Request::new(Command::Quit);
 
     let expected: Vec<u8> = vec![
@@ -58,10 +60,11 @@ fn test_request_quit_serialization() {
     let mut result: Vec<u8> = vec![];
     request.write(&mut result).unwrap();
     assert_eq!(result, expected);
+    assert_eq!(request.len(), expected.len());
 }
 
 #[test]
-fn test_request_noop_serialization() {
+fn test_noop() {
     let request = Request::new(Command::Noop);
 
     let expected: Vec<u8> = vec![
@@ -76,10 +79,11 @@ fn test_request_noop_serialization() {
     let mut result: Vec<u8> = vec![];
     request.write(&mut result).unwrap();
     assert_eq!(result, expected);
+    assert_eq!(request.len(), expected.len());
 }
 
 #[test]
-fn test_request_version_serialization() {
+fn test_version() {
     let request = Request::new(Command::Version);
 
     let expected: Vec<u8> = vec![
@@ -94,4 +98,5 @@ fn test_request_version_serialization() {
     let mut result: Vec<u8> = vec![];
     request.write(&mut result).unwrap();
     assert_eq!(result, expected);
+    assert_eq!(request.len(), expected.len());
 }
