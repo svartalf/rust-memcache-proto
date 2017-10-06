@@ -3,7 +3,7 @@ use ::{Request, Command};
 #[test]
 fn test_request_get_serialization() {
     let mut request = Request::new(Command::Get);
-    request.set_key(b"Hello");
+    request.set_key(Some(b"Hello"));
 
     let expected: Vec<u8> = vec![
         0x80, 0x00, 0x00, 0x05,
@@ -24,7 +24,7 @@ fn test_request_get_serialization() {
 #[test]
 fn test_request_delete_serialization() {
     let mut request = Request::new(Command::Delete);
-    request.set_key(b"Hello");
+    request.set_key(Some(b"Hello"));
 
     let expected: Vec<u8> = vec![
         0x80, 0x04, 0x00, 0x05,

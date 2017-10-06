@@ -1,12 +1,16 @@
 use std::io;
 use std::fmt;
 use std::convert::Into;
+use std::default::Default;
 
 use bytes::BufMut;
 use byteorder::{NetworkEndian};
 
 use super::extras::Extras;
 use super::{Magic, Command, DataType};
+use self::builder::RequestBuilder;
+
+mod builder;
 
 const HEADER_SIZE: usize = 24;
 
@@ -48,6 +52,10 @@ impl Request {
         }
     }
 
+    pub fn build(command: Command) -> RequestBuilder {
+        RequestBuilder::new(command)
+    }
+
     /// Provide key field.
     ///
     /// # Examples
@@ -56,8 +64,11 @@ impl Request {
     /// let mut request = Request::new(Command::Get);
     /// request.set_key(b"Hello");
     /// ```
-    pub fn set_key(&mut self, key: &[u8]) {
-        self.key = Some(Vec::from(key));
+    pub fn set_key<T: AsRef<[u8]>>(&mut self, key: Option<T>) {
+        self.key = match key {
+            Some(ref key) => Some(Vec::from(key.as_ref())),
+            None => None,
+        };
     }
 
     /// Provide value field.
@@ -69,12 +80,18 @@ impl Request {
     /// request.set_key(b"Hello");
     /// request.set_value(b"World");
     /// ```
-    pub fn set_value(&mut self, value: &[u8]) {
-        self.value = Some(Vec::from(value));
+    pub fn set_value<T: AsRef<[u8]>>(&mut self, value: Option<T>) {
+        self.value = match value {
+            Some(ref value) => Some(Vec::from(value.as_ref())),
+            None => None,
+        };
     }
 
-    pub fn set_extras<T: Extras>(&mut self, extras: &T) {
-        self.extras = Some(Vec::from(extras.as_ref()));
+    pub fn set_extras<T: AsRef<[u8]>>(&mut self, extras: Option<T>) {
+        self.extras = match extras {
+            Some(ref extras) => Some(Vec::from(extras.as_ref())),
+            None => None,
+        };
     }
 
     /// Provide virtual bucket ID field.
@@ -87,6 +104,18 @@ impl Request {
     /// ```
     pub fn set_vbucket_id<T: Into<u16>>(&mut self, value: T) {
         self.vbucket_id = value.into();
+    }
+
+    /// Provide Opaque field.
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// let mut request = Request::new(Command::Set);
+    /// request.set_opaque(5u32);
+    /// ```
+    pub fn set_opaque<T: Into<u32>>(&mut self, value: T) {
+        self.opaque = value.into();
     }
 
     /// Provide CAS field.
@@ -176,5 +205,21 @@ impl fmt::Debug for Request {
             .field("key", &self.key)
             .field("value", &self.value)
             .finish()
+    }
+}
+
+impl Default for Request {
+    fn default() -> Self {
+        Request {
+            magic: Magic::Request,
+            opcode: Command::Get,
+            data_type: DataType::RawBytes,
+            vbucket_id: 0,
+            opaque: 0,
+            cas: 0,
+            extras: None,
+            key: None,
+            value: None,
+        }
     }
 }
