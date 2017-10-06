@@ -8,7 +8,7 @@ use byteorder::{NetworkEndian};
 
 use super::extras::Extras;
 use super::{Magic, Command, DataType};
-use self::builder::RequestBuilder;
+pub use self::builder::RequestBuilder;
 
 mod builder;
 
@@ -52,6 +52,7 @@ impl Request {
         }
     }
 
+    /// Create new [RequestBuilder](struct.RequestBuilder.html)
     pub fn build(command: Command) -> RequestBuilder {
         RequestBuilder::new(command)
     }

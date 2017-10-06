@@ -11,7 +11,7 @@ mod errors;
 pub mod extras;
 
 pub use command::Command;
-pub use request::Request;
+pub use request::{Request, RequestBuilder};
 pub use response::{Response, Status};
 pub use errors::{ResponseError};
 
