@@ -15,16 +15,20 @@ use super::Extras;
 ///
 /// # Examples
 ///
-/// ```rust,ignore
+/// ```rust
+/// use memcache_proto::extras::Get;
+///
 /// let mut extras = Get::new();
-/// extras.set_flags(0xdeadbeef);
+/// extras.set_flags(0xdeadbeef_u32);
 /// ```
 ///
 /// With builder interface:
 ///
-/// ```rust,ignore
+/// ```rust
+/// use memcache_proto::extras::Get;
+///
 /// let extras = Get::new()
-///     .with_flags(0xdeadbeef);
+///     .with_flags(0xdeadbeef_u32);
 /// ```
 pub struct Get([u8; 4]);
 

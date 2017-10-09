@@ -15,18 +15,22 @@ use super::Extras;
 ///
 /// # Examples
 ///
-/// ```rust,ignore
+/// ```rust
+/// use memcache_proto::extras::Set;
+///
 /// let mut extras = Set::new();
-/// extras.set_flags(0xdeadbeef);
-/// extra.set_expiration(60);
+/// extras.set_flags(0xdeadbeef_u32);
+/// extras.set_expiration(60_u32);
 /// ```
 ///
 /// With builder interface:
 ///
-/// ```rust,ignore
-/// let extras = Incr::new()
-///     .with_flags(0xdeadbeef)
-///     .with_expiration(60);
+/// ```rust
+/// use memcache_proto::extras::Set;
+///
+/// let extras = Set::new()
+///     .with_flags(0xdeadbeef_u32)
+///     .with_expiration(60_u32);
 /// ```
 pub struct Set([u8; 8]);
 

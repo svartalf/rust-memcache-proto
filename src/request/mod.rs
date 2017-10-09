@@ -34,7 +34,9 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
     /// let mut request = Request::new(Command::Get);
     /// ```
     pub fn new(command: Command) -> Request {
@@ -60,9 +62,11 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
     /// let mut request = Request::new(Command::Get);
-    /// request.set_key(b"Hello");
+    /// request.set_key(Some(b"Hello"));
     /// ```
     pub fn set_key<T: AsRef<[u8]>>(&mut self, key: Option<T>) {
         self.key = match key {
@@ -75,10 +79,12 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
     /// let mut request = Request::new(Command::Set);
-    /// request.set_key(b"Hello");
-    /// request.set_value(b"World");
+    /// request.set_key(Some(b"Hello"));
+    /// request.set_value(Some(b"World"));
     /// ```
     pub fn set_value<T: AsRef<[u8]>>(&mut self, value: Option<T>) {
         self.value = match value {
@@ -96,9 +102,13 @@ impl Request {
 
     /// Provide virtual bucket ID field.
     ///
+    /// The virtual bucket for this command request.
+    ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
     /// let mut request = Request::new(Command::Set);
     /// request.set_vbucket_id(5u16);
     /// ```
@@ -106,11 +116,15 @@ impl Request {
         self.vbucket_id = value.into();
     }
 
-    /// Provide Opaque field.
+    /// Provide opaque field.
+    ///
+    /// Will be copied back to you in the response.
     ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
     /// let mut request = Request::new(Command::Set);
     /// request.set_opaque(5u32);
     /// ```
@@ -120,9 +134,13 @@ impl Request {
 
     /// Provide CAS field.
     ///
+    /// Data version check.
+    ///
     /// # Examples
     ///
-    /// ```rust,ignore
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
     /// let mut request = Request::new(Command::Set);
     /// request.set_cas(10u64);
     /// ```
@@ -131,6 +149,17 @@ impl Request {
     }
 
     /// Write serialized request as a bytes into `T`
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
+    /// let mut request = Request::new(Command::Get);
+    /// request.set_key(Some(b"Hello"));
+    /// let mut buf: Vec<u8> = Vec::with_capacity(32);
+    /// request.write(&mut buf).expect("buf filled with a bytes");
+    /// ```
     ///
     /// # Errors
     ///

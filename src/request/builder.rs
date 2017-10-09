@@ -8,7 +8,9 @@ use super::{Command, Request};
 ///
 /// # Examples
 ///
-/// ```rust,ignore
+/// ```rust
+/// use memcache_proto::{Request, Command};
+///
 /// let request = Request::build(Command::Set)
 ///     .key(Some("hello"))
 ///     .value(Some("world"))

@@ -14,16 +14,20 @@ use super::Extras;
 ///
 /// # Examples
 ///
-/// ```rust,ignore
+/// ```rust
+/// use memcache_proto::extras::Increment;
+///
 /// let mut extras = Increment::new();
 /// extras.set_amount(1);
 /// extras.set_initial(0);
-/// extra.set_expiration(60);
+/// extras.set_expiration(60);
 /// ```
 ///
 /// With builder interface:
 ///
-/// ```rust,ignore
+/// ```rust
+/// use memcache_proto::extras::Increment;
+///
 /// let extras = Increment::new()
 ///     .with_amount(1)
 ///     .with_initial(0)
