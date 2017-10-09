@@ -9,7 +9,7 @@ use memcache_proto::{Request, Command};
 #[bench]
 fn bench_request_get_serialization(b: &mut Bencher) {
     let mut request = Request::new(Command::Get);
-    request.set_key(b"Hello");
+    request.set_key(Some(b"Hello"));
 
     let mut result: Vec<u8> = Vec::with_capacity(32);
     b.iter(|| {
