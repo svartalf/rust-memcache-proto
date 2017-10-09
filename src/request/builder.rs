@@ -1,7 +1,7 @@
 use std::fmt;
 use std::default::Default;
 
-use super::{Command, Request, DataType};
+use super::{Command, Request};
 
 /// Builder, which can be used in order to create a new [Request](type.Request.html)
 /// via chain calls.

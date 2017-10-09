@@ -1,4 +1,4 @@
-use std::convert::{From, AsRef};
+use std::convert::AsRef;
 
 mod get;
 mod set;

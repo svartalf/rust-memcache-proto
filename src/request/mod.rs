@@ -6,7 +6,6 @@ use std::default::Default;
 use bytes::BufMut;
 use byteorder::{NetworkEndian};
 
-use super::extras::Extras;
 use super::{Magic, Command, DataType};
 pub use self::builder::RequestBuilder;
 
@@ -199,12 +198,14 @@ impl Request {
 
 impl fmt::Debug for Request {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut resp = f.debug_struct("Request");
-
-        resp
+        f.debug_struct("Request")
             .field("command", &self.opcode)
+            .field("vbucket_id", &self.vbucket_id)
+            .field("opaque", &self.opaque)
+            .field("cas", &self.cas)
             .field("key", &self.key)
             .field("value", &self.value)
+            .field("extras", &self.extras)
             .finish()
     }
 }
