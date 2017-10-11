@@ -2,7 +2,7 @@ use extras::Increment;
 
 #[test]
 fn test_blank() {
-    let extra = Increment::new();
+    let extra = Increment::default();
     let raw: &[u8] = extra.as_ref();
     assert_eq!(0, extra.amount());
     assert_eq!([0; 8], &raw[0..8]);
@@ -14,7 +14,7 @@ fn test_blank() {
 
 #[test]
 fn test_flags() {
-    let extra = Increment::new().with_amount(1);
+    let extra = Increment::build().amount(1).finish();
     let raw: &[u8] = extra.as_ref();
     assert_eq!(1, extra.amount());
     assert_eq!([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01], &raw[0..8]);
@@ -26,7 +26,7 @@ fn test_flags() {
 
 #[test]
 fn test_initial() {
-    let extra = Increment::new().with_initial(42);
+    let extra = Increment::build().initial(42).finish();
     let raw: &[u8] = extra.as_ref();
     assert_eq!(0, extra.amount());
     assert_eq!([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], &raw[0..8]);
@@ -38,7 +38,7 @@ fn test_initial() {
 
 #[test]
 fn test_expiration() {
-    let extra = Increment::new().with_expiration(360);
+    let extra = Increment::build().expiration(360).finish();
     let raw: &[u8] = extra.as_ref();
     assert_eq!(0, extra.amount());
     assert_eq!([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], &raw[0..8]);

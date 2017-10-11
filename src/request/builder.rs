@@ -45,11 +45,12 @@ impl RequestBuilder {
         self
     }
 
-    /// Provide extras
-    pub fn extras<T: AsRef<[u8]>>(mut self, extras: Option<T>) -> Self {
-        self.0.set_extras(extras);
-        self
-    }
+//    /// Provide extras
+// TODO:
+//    pub fn extras<T: AsRef<[u8]>>(mut self, extras: Option<T>) -> Self {
+//        self.0.set_extras(extras);
+//        self
+//    }
 
     /// Provide key
     pub fn key<T: AsRef<[u8]>>(mut self, key: Option<T>) -> Self {

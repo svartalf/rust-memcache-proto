@@ -93,12 +93,13 @@ impl Request {
         };
     }
 
-    pub fn set_extras<T: AsRef<[u8]>>(&mut self, extras: Option<T>) {
-        self.extras = match extras {
-            Some(ref extras) => Some(Vec::from(extras.as_ref())),
-            None => None,
-        };
-    }
+// TODO:
+//    pub fn set_extras<T: AsRef<[u8]>>(&mut self, extras: Option<T>) {
+//        self.extras = match extras {
+//            Some(ref extras) => Some(Vec::from(extras.as_ref())),
+//            None => None,
+//        };
+//    }
 
     /// Provide virtual bucket ID field.
     ///
@@ -167,6 +168,7 @@ impl Request {
     ///
     /// [Error]: ../../std/io/struct.Error.html
     pub fn write<T: BufMut>(&self, out: &mut T) -> io::Result<()> {
+        // TODO: Handle capacity problems in `out`
         out.put_u8(self.magic as u8);
         out.put_u8(self.opcode as u8);
         let key_length = match self.key {

@@ -1,7 +1,10 @@
+use std::io;
 use std::fmt;
-use std::convert::{AsRef, Into};
+use std::default::Default;
+use std::convert::Into;
 
-use byteorder::{ByteOrder, NetworkEndian};
+use bytes::{Buf, BufMut};
+use byteorder::NetworkEndian;
 
 use super::Extras;
 
@@ -15,7 +18,7 @@ use super::Extras;
 ///
 /// # Examples
 ///
-/// ```rust
+/// ```rust,ignore
 /// use memcache_proto::extras::Set;
 ///
 /// let mut extras = Set::new();
@@ -25,14 +28,17 @@ use super::Extras;
 ///
 /// With builder interface:
 ///
-/// ```rust
+/// ```rust,ignore
 /// use memcache_proto::extras::Set;
 ///
 /// let extras = Set::new()
 ///     .with_flags(0xdeadbeef_u32)
 ///     .with_expiration(60_u32);
 /// ```
-pub struct Set([u8; 8]);
+pub struct Set{
+    flags: u32,
+    expiration: u32,
+}
 
 /// Extras container for `Add` requests.
 ///
@@ -48,43 +54,76 @@ pub type Replace = Set;
 
 impl Set {
 
-    pub fn new() -> Set {
-        Set([0; 8])
+    pub fn new(flags: u32, expiration: u32) -> Set {
+        Self {
+            flags,
+            expiration,
+        }
     }
 
-    pub fn with_flags<T: Into<u32>>(mut self, value: T) -> Self {
-        self.set_flags(value);
-        self
-    }
-
-    pub fn with_expiration<T: Into<u32>>(mut self, value: T) -> Self {
-        self.set_expiration(value);
-        self
+    pub fn build() -> SetBuilder {
+        SetBuilder(Set::default())
     }
 
     pub fn set_flags<T: Into<u32>>(&mut self, value: T) {
-        NetworkEndian::write_u32(&mut self.0[..4], value.into());
+        self.flags = value.into();
     }
 
     pub fn flags(&self) -> u32 {
-        NetworkEndian::read_u32(&self.0[..4])
+        self.flags
     }
 
     pub fn set_expiration<T: Into<u32>>(&mut self, value: T) {
-        NetworkEndian::write_u32(&mut self.0[4..8], value.into());
+        self.expiration = value.into();
     }
 
     pub fn expiration(&self) -> u32 {
-        NetworkEndian::read_u32(&self.0[4..8])
+        self.expiration
+    }
+}
+
+pub struct SetBuilder(Set);
+
+impl SetBuilder {
+
+    pub fn flags(mut self, flags: u32) -> Self {
+        self.0.set_flags(flags);
+        self
+    }
+
+    pub fn expiration(mut self, expiration: u32) -> Self {
+        self.0.set_expiration(expiration);
+        self
+    }
+
+    pub fn finish(self) -> Set {
+        self.0
     }
 
 }
 
-impl Extras for Set {}
+impl Extras for Set {
+    fn read<T: Buf>(buf: &mut T) -> io::Result<Self> {
+        Ok(Self{
+            flags: buf.get_u32::<NetworkEndian>(),
+            expiration: buf.get_u32::<NetworkEndian>(),
+        })
+    }
 
-impl AsRef<[u8]> for Set {
-    fn as_ref(&self) -> &[u8] {
-        &self.0
+    fn write<T: BufMut>(&self, buf: &mut T) -> io::Result<()> {
+        buf.put_u32::<NetworkEndian>(self.flags);
+        buf.put_u32::<NetworkEndian>(self.expiration);
+        Ok(())
+    }
+
+}
+
+impl Default for Set {
+    fn default() -> Self {
+        Self {
+            flags: 0,
+            expiration: 0,
+        }
     }
 }
 

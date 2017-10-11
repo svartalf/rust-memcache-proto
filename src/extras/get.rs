@@ -1,7 +1,9 @@
-use std::convert::AsRef;
+use std::io;
+use std::default::Default;
 use std::fmt;
 
-use byteorder::{ByteOrder, NetworkEndian};
+use bytes::{Buf, BufMut};
+use byteorder::NetworkEndian;
 
 use super::Extras;
 
@@ -15,7 +17,7 @@ use super::Extras;
 ///
 /// # Examples
 ///
-/// ```rust
+/// ```rust,ignore
 /// use memcache_proto::extras::Get;
 ///
 /// let mut extras = Get::new();
@@ -24,13 +26,15 @@ use super::Extras;
 ///
 /// With builder interface:
 ///
-/// ```rust
+/// ```rust,ignore
 /// use memcache_proto::extras::Get;
 ///
 /// let extras = Get::new()
 ///     .with_flags(0xdeadbeef_u32);
 /// ```
-pub struct Get([u8; 4]);
+pub struct Get{
+    flags: u32,
+}
 
 /// Extras container for `GetQ` requests.
 ///
@@ -52,37 +56,63 @@ pub type GetKQ = Get;
 
 impl Get {
     /// Create new extras container.
-    /// All fields are zeroed by default.
-    pub fn new() -> Get {
-        Get([0; 4])
+    pub fn new(flags: u32) -> Get {
+        Get {
+            flags: flags,
+        }
     }
 
-    pub fn with_flags(mut self, flags: u32) -> Get {
-        self.set_flags(flags);
-        self
+    pub fn build() -> GetBuilder {
+        GetBuilder(Get::default())
     }
 
-    pub fn set_flags(&mut self, value: u32) {
-        NetworkEndian::write_u32(&mut self.0[..4], value);
+    pub fn set_flags(&mut self, flags: u32) {
+        self.flags = flags;
     }
 
     pub fn flags(&self) -> u32 {
-        NetworkEndian::read_u32(&self.0[..4])
+        self.flags
     }
 }
 
-impl Extras for Get {}
+pub struct GetBuilder(Get);
 
-impl AsRef<[u8]> for Get {
-    fn as_ref(&self) -> &[u8] {
-        &self.0
+impl GetBuilder {
+    pub fn flags(mut self, flags: u32) -> Self {
+        self.0.set_flags(flags);
+        self
+    }
+
+    pub fn finish(self) -> Get {
+        self.0
+    }
+}
+
+impl Extras for Get {
+    fn read<T: Buf>(buf: &mut T) -> io::Result<Self> {
+        Ok(Self {
+            flags: buf.get_u32::<NetworkEndian>(),
+        })
+    }
+
+    fn write<T: BufMut>(&self, buf: &mut T) -> io::Result<()> {
+        buf.put_u32::<NetworkEndian>(self.flags);
+        Ok(())
+    }
+}
+
+impl Default for Get {
+    fn default() -> Self {
+        Self {
+            flags: 0,
+        }
     }
 }
 
 impl fmt::Debug for Get {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Get")
-            .field("flags", &self.flags())
+            .field("flags", &self.flags)
             .finish()
     }
 }
