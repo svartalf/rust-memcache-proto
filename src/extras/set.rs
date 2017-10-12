@@ -6,7 +6,7 @@ use std::convert::Into;
 use bytes::{Buf, BufMut};
 use byteorder::NetworkEndian;
 
-use super::Extras;
+use super::{Extras, Expiration};
 
 /// Extras container for `Set` requests.
 ///
@@ -54,10 +54,10 @@ pub type Replace = Set;
 
 impl Set {
 
-    pub fn new(flags: u32, expiration: u32) -> Set {
+    pub fn new<T: Expiration>(flags: u32, expiration: T) -> Set {
         Self {
-            flags,
-            expiration,
+            flags: flags,
+            expiration: expiration.into_expiration(),
         }
     }
 
@@ -73,8 +73,8 @@ impl Set {
         self.flags
     }
 
-    pub fn set_expiration<T: Into<u32>>(&mut self, value: T) {
-        self.expiration = value.into();
+    pub fn set_expiration<T: Expiration>(&mut self, value: T) {
+        self.expiration = value.into_expiration();
     }
 
     pub fn expiration(&self) -> u32 {
@@ -91,7 +91,7 @@ impl SetBuilder {
         self
     }
 
-    pub fn expiration(mut self, expiration: u32) -> Self {
+    pub fn expiration<T: Expiration>(mut self, expiration: T) -> Self {
         self.0.set_expiration(expiration);
         self
     }

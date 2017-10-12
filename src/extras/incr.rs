@@ -5,7 +5,7 @@ use std::default::Default;
 use bytes::{Buf, BufMut};
 use byteorder::NetworkEndian;
 
-use super::Extras;
+use super::{Extras, Expiration};
 
 /// Extras container for `Increment` requests.
 ///
@@ -47,11 +47,11 @@ pub type Decrement = Increment;
 
 impl Increment {
 
-    pub fn new(amount: u64, initial: u64, expiration: u32) -> Self {
+    pub fn new<T: Expiration>(amount: u64, initial: u64, expiration: T) -> Self {
         Self {
-            amount,
-            initial,
-            expiration,
+            amount: amount,
+            initial: initial,
+            expiration: expiration.into_expiration(),
         }
     }
 
@@ -75,8 +75,8 @@ impl Increment {
         self.initial
     }
 
-    pub fn set_expiration(&mut self, value: u32) {
-        self.expiration = value;
+    pub fn set_expiration<T: Expiration>(&mut self, value: T) {
+        self.expiration = value.into_expiration();
     }
 
     pub fn expiration(&self) -> u32 {
@@ -98,7 +98,7 @@ impl IncrementBuilder {
         self
     }
 
-    pub fn expiration(mut self, expiration: u32) -> Self {
+    pub fn expiration<T: Expiration>(mut self, expiration: T) -> Self {
         self.0.set_expiration(expiration);
         self
     }
