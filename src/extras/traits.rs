@@ -1,4 +1,3 @@
-use std::convert::Into;
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
 // Expiration times are specified in unsigned integer seconds.
@@ -12,20 +11,18 @@ pub const MAX_SECONDS: u32 = 60 * 60 * 24 * 30;
 ///
 /// Reference: https://github.com/memcached/memcached/wiki/Programming#expiration
 pub trait Expiration {
-    /// Convert object into a memcached expiration timeout.
+    /// Convert object into a seconds timeout.
     ///
-    /// Implementors are required to call [convert_expiration()](#method.convert_expiration)
-    /// in order to convert value properly.
-    fn into_expiration(self) -> u32;
+    /// Implementations should not bother about wrapping around magic "30 days" limit,
+    /// just return seconds value.
+    fn as_expiration(&self) -> u32;
 
-    /// Ensure that expiration timeout is not higher than "30 days" (60*60*24*30 seconds),
-    /// and if it is - converts it into a UNIX timestamp date.
-    fn convert_expiration(value: u32) -> u32 {
+    fn get_timeout(&self) -> u32 {
+        let value = self.as_expiration();
         if value > MAX_SECONDS {
             let now = SystemTime::now()
                 // TODO: Handle `.unwrap()` error
                 .duration_since(UNIX_EPOCH).unwrap();
-            println!("code ts: {:?}", now);
             now.checked_add(Duration::new(value as u64, 0))
                 // TODO: Possible value truncation
                 .unwrap().as_secs() as u32
@@ -37,26 +34,26 @@ pub trait Expiration {
 
 
 impl Expiration for u8 {
-    fn into_expiration(self) -> u32 {
-        self as u32
+    fn as_expiration(&self) -> u32 {
+        *self as u32
     }
 }
 
 impl Expiration for u16 {
-    fn into_expiration(self) -> u32 {
-        self as u32
+    fn as_expiration(&self) -> u32 {
+        *self as u32
     }
 }
 
 impl Expiration for u32 {
-    fn into_expiration(self) -> u32 {
-        Self::convert_expiration(self)
+    fn as_expiration(&self) -> u32 {
+        *self as u32
     }
 }
 
 impl Expiration for Duration {
-    fn into_expiration(self) -> u32 {
+    fn as_expiration(&self) -> u32 {
         // TODO: Possible value truncation
-        Self::convert_expiration(self.as_secs() as u32)
+        self.as_secs() as u32
     }
 }

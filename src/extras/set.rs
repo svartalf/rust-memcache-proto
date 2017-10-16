@@ -57,7 +57,7 @@ impl Set {
     pub fn new<T: Expiration>(flags: u32, expiration: T) -> Set {
         Self {
             flags: flags,
-            expiration: expiration.into_expiration(),
+            expiration: expiration.get_timeout(),
         }
     }
 
@@ -74,7 +74,7 @@ impl Set {
     }
 
     pub fn set_expiration<T: Expiration>(&mut self, value: T) {
-        self.expiration = value.into_expiration();
+        self.expiration = value.get_timeout();
     }
 
     pub fn expiration(&self) -> u32 {
