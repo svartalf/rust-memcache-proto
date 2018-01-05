@@ -1,9 +1,9 @@
 enum_from_primitive! {
 
-    /// Available protocol commands
+    /// Available protocol commands.
     ///
-    /// Reference: https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes
-    #[derive(Debug, PartialEq, Copy, Clone)]
+    /// Reference: <https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes>
+    #[derive(Debug, Copy, Clone, PartialEq)]
     pub enum Command {
         Get = 0x00,
         Set = 0x01,

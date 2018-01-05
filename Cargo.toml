@@ -3,14 +3,14 @@ name = "memcache-proto"
 description = "Memcached binary protocol"
 documentation = "https://docs.rs/memcache-proto"
 repository = "https://github.com/svartalf/rust-memcache-proto"
-version = "0.1.0-alpha"
+version = "0.1.0"
 license = "MIT/Apache-2.0"
 authors = ["svartalf <self@svartalf.info>"]
 keywords = ["memcached", "memcache", "binary", "protocol"]
 categories = ["database"]
 
 [dependencies]
-clippy = { version = "^0.0", optional = true }
+enum_primitive = "0.1.1"
 
 [badges]
 travis-ci = { repository = "svartalf/rust-memcache-proto", branch = "master" }

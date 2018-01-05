@@ -1,19 +1,9 @@
-use std::io;
 use std::fmt;
-use std::convert::Into;
-use std::default::Default;
+use std::default;
 
-use bytes::BufMut;
-use byteorder::{NetworkEndian};
+use {Magic, Command, DataType};
+use extras::Extras;
 
-use super::{Magic, Command, DataType};
-pub use self::builder::RequestBuilder;
-
-mod builder;
-
-const HEADER_SIZE: usize = 24;
-
-/// Memcached request instance.
 pub struct Request {
     magic: Magic,
     opcode: Command,
@@ -22,43 +12,46 @@ pub struct Request {
     opaque: u32,
     cas: u64,
 
-    // body
-    extras: Option<Vec<u8>>,
-    key: Option<Vec<u8>>,
-    value: Option<Vec<u8>>,
+    extras: Option<Box<Extras>>,
 }
 
 impl Request {
 
-    /// Create new Request with all fields blank.
+    /// Create a new blank `Request` with the `Command`.
+    ///
+    /// All fields will set to their defaults.
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
-    /// let mut request = Request::new(Command::Get);
+    /// let request = Request::new(Command::Get);
+    /// assert_eq!(*request.command(), Command::Get);
     /// ```
     pub fn new(command: Command) -> Request {
         Request {
-            magic: Magic::Request,
             opcode: command,
-            data_type: DataType::RawBytes,
-            vbucket_id: 0x00,
-            opaque: 0,
-            cas: 0,
-            extras: None,
-            key: None,
-            value: None,
+            ..Self::default()
         }
     }
 
-    /// Create new [RequestBuilder](struct.RequestBuilder.html)
-    pub fn build(command: Command) -> RequestBuilder {
-        RequestBuilder::new(command)
+    /// Returns a reference to the associated `Command`.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
+    /// let mut request = Request::new(Command::Set);
+    ///
+    /// assert_eq!(*request.command(), Command::Set);
+    /// ```
+    pub fn command(&self) -> &Command {
+        &self.opcode
     }
 
-    /// Provide key field.
+    /// Returns a mutable reference to the associated `Command`.
     ///
     /// # Examples
     ///
@@ -66,16 +59,15 @@ impl Request {
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Get);
-    /// request.set_key(Some(b"Hello"));
+    /// *request.command_mut() = Command::Increment;
+    ///
+    /// assert_eq!(*request.command(), Command::Increment);
     /// ```
-    pub fn set_key<T: AsRef<[u8]>>(&mut self, key: Option<T>) {
-        self.key = match key {
-            Some(ref key) => Some(Vec::from(key.as_ref())),
-            None => None,
-        };
+    pub fn command_mut(&mut self) -> &mut Command {
+        &mut self.opcode
     }
 
-    /// Provide value field.
+    /// Returns a reference to the associated Virtual Bucket ID.
     ///
     /// # Examples
     ///
@@ -83,27 +75,14 @@ impl Request {
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
-    /// request.set_key(Some(b"Hello"));
-    /// request.set_value(Some(b"World"));
+    ///
+    /// assert_eq!(*request.vbucket_id(), 0);
     /// ```
-    pub fn set_value<T: AsRef<[u8]>>(&mut self, value: Option<T>) {
-        self.value = match value {
-            Some(ref value) => Some(Vec::from(value.as_ref())),
-            None => None,
-        };
+    pub fn vbucket_id(&self) -> &u16 {
+        &self.vbucket_id
     }
 
-// TODO:
-//    pub fn set_extras<T: AsRef<[u8]>>(&mut self, extras: Option<T>) {
-//        self.extras = match extras {
-//            Some(ref extras) => Some(Vec::from(extras.as_ref())),
-//            None => None,
-//        };
-//    }
-
-    /// Provide virtual bucket ID field.
-    ///
-    /// The virtual bucket for this command request.
+    /// Returns a mutable reference to the associated Virtual Bucket ID.
     ///
     /// # Examples
     ///
@@ -111,15 +90,15 @@ impl Request {
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
-    /// request.set_vbucket_id(5u16);
+    /// *request.vbucket_id_mut() = 5;
+    ///
+    /// assert_eq!(*request.vbucket_id(), 5);
     /// ```
-    pub fn set_vbucket_id<T: Into<u16>>(&mut self, value: T) {
-        self.vbucket_id = value.into();
+    pub fn vbucket_id_mut(&mut self) -> &mut u16 {
+        &mut self.vbucket_id
     }
 
-    /// Provide opaque field.
-    ///
-    /// Will be copied back to you in the response.
+    /// Returns a reference to the associated Opaque value.
     ///
     /// # Examples
     ///
@@ -127,15 +106,14 @@ impl Request {
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
-    /// request.set_opaque(5u32);
+    ///
+    /// assert_eq!(*request.opaque(), 0);
     /// ```
-    pub fn set_opaque<T: Into<u32>>(&mut self, value: T) {
-        self.opaque = value.into();
+    pub fn opaque(&self) -> &u32 {
+        &self.opaque
     }
 
-    /// Provide CAS field.
-    ///
-    /// Data version check.
+    /// Returns a mutable reference to the associated Opaque value.
     ///
     /// # Examples
     ///
@@ -143,87 +121,53 @@ impl Request {
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
-    /// request.set_cas(10u64);
+    /// *request.opaque_mut() = 5;
+    ///
+    /// assert_eq!(*request.opaque(), 5);
     /// ```
-    pub fn set_cas<T: Into<u64>>(&mut self, value: T) {
-        self.cas = value.into();
+    pub fn opaque_mut(&mut self) -> &mut u32 {
+        &mut self.opaque
     }
 
-    /// Write serialized request as a bytes into `T`
+    /// Returns a reference to the associated Compare-and-swap value.
     ///
     /// # Examples
     ///
     /// ```rust
     /// use memcache_proto::{Request, Command};
     ///
-    /// let mut request = Request::new(Command::Get);
-    /// request.set_key(Some(b"Hello"));
-    /// let mut buf: Vec<u8> = Vec::with_capacity(32);
-    /// request.write(&mut buf).expect("buf filled with a bytes");
+    /// let mut request = Request::new(Command::Set);
+    ///
+    /// assert_eq!(*request.cas(), 0);
     /// ```
-    ///
-    /// # Errors
-    ///
-    /// Returns an [`std::io::Error`][Error] if write had failed somehow.
-    ///
-    /// [Error]: ../../std/io/struct.Error.html
-    pub fn write<T: BufMut>(&self, out: &mut T) -> io::Result<()> {
-        // TODO: Handle capacity problems in `out`
-        out.put_u8(self.magic as u8);
-        out.put_u8(self.opcode as u8);
-        let key_length = match self.key {
-            // TODO: Possible len truncation
-            Some(ref key) => key.len() as u16,
-            None => 0,
-        };
-        out.put_u16::<NetworkEndian>(key_length);
-        let extras_length = match self.extras {
-            // TODO: Possible len truncation
-            Some(ref extras) => extras.len() as u8,
-            None => 0,
-        };
-        out.put_u8(extras_length);
-        out.put_u8(self.data_type as u8);
-        out.put_u16::<NetworkEndian>(self.vbucket_id);
-        let body_length: u32 = match self.value {
-            Some(ref value) => value.len() as u32,
-            None => 0,
-        } + key_length as u32 + extras_length as u32;
-        out.put_u32::<NetworkEndian>(body_length);
-        out.put_u32::<NetworkEndian>(self.opaque);
-        out.put_u64::<NetworkEndian>(self.cas);
-
-        if let Some(ref extras) = self.extras {
-            out.put_slice(extras);
-        }
-
-        if let Some(ref key) = self.key {
-            out.put_slice(key);
-        }
-
-        if let Some(ref value) = self.value {
-            out.put_slice(value);
-        }
-
-        Ok(())
+    pub fn cas(&self) -> &u64 {
+        &self.cas
     }
 
-    pub fn len(&self) -> usize {
-        let mut result: usize = HEADER_SIZE;
-        if let Some(ref extras) = self.extras {
-            result += extras.len();
-        }
-
-        if let Some(ref key) = self.key {
-            result += key.len();
-        }
-
-        if let Some(ref value) = self.value {
-            result += value.len();
-        }
-
-        result
+    /// Returns a mutable reference to the associated Compare-and-swap value.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use memcache_proto::{Request, Command};
+    ///
+    /// let mut request = Request::new(Command::Set);
+    /// *request.cas_mut() = 42;
+    ///
+    /// assert_eq!(*request.cas(), 42);
+    /// ```
+    pub fn cas_mut(&mut self) -> &mut u64 {
+        &mut self.cas
     }
+
+    pub fn extras(&self) -> &Option<Box<Extras>> {
+        &self.extras
+    }
+
+    pub fn extras_mut(&mut self) -> &mut Option<Box<Extras>> {
+        &mut self.extras
+    }
+
 }
 
 
@@ -234,14 +178,15 @@ impl fmt::Debug for Request {
             .field("vbucket_id", &self.vbucket_id)
             .field("opaque", &self.opaque)
             .field("cas", &self.cas)
-            .field("key", &self.key)
-            .field("value", &self.value)
+            // .field("key", &self.key)
+            // .field("value", &self.value)
             .field("extras", &self.extras)
             .finish()
     }
 }
 
-impl Default for Request {
+
+impl default::Default for Request {
     fn default() -> Self {
         Request {
             magic: Magic::Request,
@@ -251,11 +196,8 @@ impl Default for Request {
             opaque: 0,
             cas: 0,
             extras: None,
-            key: None,
-            value: None,
+//            key: None,
+//            value: None,
         }
     }
 }
-
-#[cfg(test)]
-mod tests;
