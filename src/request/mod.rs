@@ -4,7 +4,7 @@ use std::default;
 use {Magic, Command, DataType};
 use extras::Extras;
 
-pub struct Request {
+pub struct Request<K, V> {
     magic: Magic,
     opcode: Command,
     data_type: DataType,
@@ -13,11 +13,11 @@ pub struct Request {
     cas: u64,
 
     extras: Option<Box<Extras>>,
-    // TODO: key field
-    // TODO: value field
+    key: Option<Box<K>>,
+    value: Option<Box<V>>,
 }
 
-impl Request {
+impl<K, V> Request<K, V> {
 
     /// Create a new blank `Request` with the `Command`.
     ///
@@ -31,7 +31,7 @@ impl Request {
     /// let request = Request::new(Command::Get);
     /// assert_eq!(*request.command(), Command::Get);
     /// ```
-    pub fn new(command: Command) -> Request {
+    pub fn new(command: Command) -> Request<K, V> {
         Request {
             opcode: command,
             ..Self::default()
@@ -205,23 +205,24 @@ impl Request {
 
 }
 
-
-impl fmt::Debug for Request {
+d 
+impl<K, V> fmt::Debug for Request<K, V>
+        where K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Request")
             .field("command", &self.opcode)
             .field("vbucket_id", &self.vbucket_id)
             .field("opaque", &self.opaque)
             .field("cas", &self.cas)
-            // .field("key", &self.key)
-            // .field("value", &self.value)
+             .field("key", &self.key)
+             .field("value", &self.value)
             .field("extras", &self.extras)
             .finish()
     }
 }
 
 
-impl default::Default for Request {
+impl<K, V> default::Default for Request<K, V> {
     fn default() -> Self {
         Request {
             magic: Magic::Request,
@@ -231,8 +232,8 @@ impl default::Default for Request {
             opaque: 0,
             cas: 0,
             extras: None,
-//            key: None,
-//            value: None,
+            key: None,
+            value: None,
         }
     }
 }
