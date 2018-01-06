@@ -13,6 +13,8 @@ pub struct Request {
     cas: u64,
 
     extras: Option<Box<Extras>>,
+    // TODO: key field
+    // TODO: value field
 }
 
 impl Request {
@@ -40,7 +42,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -55,7 +57,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Get);
@@ -71,7 +73,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -86,7 +88,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -102,7 +104,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -117,7 +119,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -133,7 +135,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -148,7 +150,7 @@ impl Request {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// use memcache_proto::{Request, Command};
     ///
     /// let mut request = Request::new(Command::Set);
@@ -160,9 +162,42 @@ impl Request {
         &mut self.cas
     }
 
+    /// Returns a reference to the associated extras.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use memcache_proto::{Request, Command};
+    ///
+    /// let mut request = Request::new(Command::Get);
+    ///
+    /// assert!(request.extras().is_none());
+    /// ```
     pub fn extras(&self) -> &Option<Box<Extras>> {
+        // TODO: It is really painful to cast `Box<Extras>` into a struct object
+        // Also, library users will need to determine what struct (Get/Set/..)
+        // should be used here and cast them manually.
+        // Can we return an `Option<StructType>` here dynamically somehow?
         &self.extras
     }
+
+    /// Returns a mutable reference to the associated extras.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use memcache_proto::{Request, Command, extras};
+    ///
+    /// let mut request = Request::new(Command::Set);
+    /// let extras = extras::Set::new(0xdeadbeef, 3600);
+    /// *request.extras_mut() = Some(Box::new(extras));
+    ///
+    /// assert!(request.extras().is_some());
+    ///
+    /// let my_extras: extras::Set = **request.extras().as_ref().unwrap();
+    /// assert_eq!(my_extras.flags(), 0xdeadbeef);
+    /// assert_eq!(my_extras.expiration(), 3600);
+    /// ```
 
     pub fn extras_mut(&mut self) -> &mut Option<Box<Extras>> {
         &mut self.extras

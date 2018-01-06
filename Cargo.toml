@@ -11,6 +11,8 @@ categories = ["database"]
 
 [dependencies]
 enum_primitive = "0.1.1"
+byteorder = "1.2.1"
+bytes = "0.4.5"
 
 [badges]
 travis-ci = { repository = "svartalf/rust-memcache-proto", branch = "master" }
