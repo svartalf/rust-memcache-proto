@@ -1,5 +1,6 @@
+use std::io;
 use bytes::{Buf, BufMut};
-use byteorder::NetworkEndian;
+// use byteorder::NetworkEndian;
 
 use super::Extras;
 
@@ -18,6 +19,7 @@ use super::Extras;
 ///
 /// let mut extras = Get::new(0xdeadbeef);
 /// ```
+#[derive(Debug)]
 pub struct Get {
     flags: u32,
 }
@@ -79,4 +81,14 @@ impl Get {
         &mut self.flags
     }
 
+}
+
+impl Extras for Get {
+    fn read<T: Buf>(buf: &mut T) -> io::Result<Self> {
+        unimplemented!()
+    }
+
+    fn write<T: BufMut>(&self, buf: &mut T) -> io::Result<()> {
+        unimplemented!()
+    }
 }

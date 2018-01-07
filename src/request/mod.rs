@@ -2,40 +2,64 @@ use std::fmt;
 use std::default;
 
 use {Magic, Command, DataType};
-use extras::Extras;
+use extras::{Extras};
+use self::builder::Builder;
 
-pub struct Request<K, V> {
+mod builder;
+
+/// Represents an Memcached request.
+///
+/// An Memcached request have optional key, value and extras fields.
+/// Key and value fields are generic, enabling arbitrary types to represent them.
+/// For example, the key could be `Vec<u8>`.
+/// (**TODO**: Create more examples, ensure that they are working and add them here.)
+///
+/// # Examples
+///
+/// Creating a `Request` to send
+///
+/// ```rust
+///
+/// use memcache_proto::{Request, command};
+///
+/// let mut request: Request<command::Get, &[u8], ()> = Request::new();
+/// *request.key_mut() = Some(Box::new(b"some-cached-value"));
+/// ```
+pub struct Request<C, K, V> where C: Command {
     magic: Magic,
-    opcode: Command,
+    opcode: C,
     data_type: DataType,
     vbucket_id: u16,
     opaque: u32,
     cas: u64,
 
-    extras: Option<Box<Extras>>,
+    extras: Option<C::RequestExtras>,
     key: Option<Box<K>>,
     value: Option<Box<V>>,
 }
 
-impl<K, V> Request<K, V> {
+impl<C, K, V> Request<C, K, V> where C: Command {
 
-    /// Create a new blank `Request` with the `Command`.
+    /// Create a new blank `Request`.
     ///
     /// All fields will set to their defaults.
     ///
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let request = Request::new(Command::Get);
-    /// assert_eq!(*request.command(), Command::Get);
+    /// let request: Request<command::Get, Vec<u8>, ()> = Request::new();
     /// ```
-    pub fn new(command: Command) -> Request<K, V> {
+    pub fn new() -> Request<C, K, V> {
         Request {
-            opcode: command,
+            opcode: C::default(),
             ..Self::default()
         }
+    }
+
+    pub fn build() -> Builder<C, K, V> {
+        Builder::new()
     }
 
     /// Returns a reference to the associated `Command`.
@@ -43,29 +67,30 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     ///
-    /// assert_eq!(*request.command(), Command::Set);
+    /// assert_eq!(*request.command(), command::Set);
     /// ```
-    pub fn command(&self) -> &Command {
+    pub fn command(&self) -> &C {
         &self.opcode
     }
 
     /// Returns a mutable reference to the associated `Command`.
     ///
+    /// Useful only at request creation, since `Request` struct is parametrized over `Command`,
+    /// so it is impossible to replace command for an already instatiated `Request`.
+    ///
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Get);
-    /// *request.command_mut() = Command::Increment;
-    ///
-    /// assert_eq!(*request.command(), Command::Increment);
+    /// let mut request: Request<_, (), ()> = Request::new();
+    /// *request.command_mut() = command::Get;
     /// ```
-    pub fn command_mut(&mut self) -> &mut Command {
+    pub fn command_mut(&mut self) -> &mut C {
         &mut self.opcode
     }
 
@@ -74,9 +99,9 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     ///
     /// assert_eq!(*request.vbucket_id(), 0);
     /// ```
@@ -89,9 +114,9 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     /// *request.vbucket_id_mut() = 5;
     ///
     /// assert_eq!(*request.vbucket_id(), 5);
@@ -105,9 +130,9 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     ///
     /// assert_eq!(*request.opaque(), 0);
     /// ```
@@ -120,9 +145,9 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     /// *request.opaque_mut() = 5;
     ///
     /// assert_eq!(*request.opaque(), 5);
@@ -136,9 +161,9 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     ///
     /// assert_eq!(*request.cas(), 0);
     /// ```
@@ -151,9 +176,9 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     /// *request.cas_mut() = 42;
     ///
     /// assert_eq!(*request.cas(), 42);
@@ -167,17 +192,13 @@ impl<K, V> Request<K, V> {
     /// # Examples
     ///
     /// ```
-    /// use memcache_proto::{Request, Command};
+    /// use memcache_proto::{Request, command};
     ///
-    /// let mut request = Request::new(Command::Get);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     ///
     /// assert!(request.extras().is_none());
     /// ```
-    pub fn extras(&self) -> &Option<Box<Extras>> {
-        // TODO: It is really painful to cast `Box<Extras>` into a struct object
-        // Also, library users will need to determine what struct (Get/Set/..)
-        // should be used here and cast them manually.
-        // Can we return an `Option<StructType>` here dynamically somehow?
+    pub fn extras(&self) -> &Option<C::RequestExtras> {
         &self.extras
     }
 
@@ -185,29 +206,45 @@ impl<K, V> Request<K, V> {
     ///
     /// # Examples
     ///
-    /// ```
-    /// use memcache_proto::{Request, Command, extras};
+    /// ```ignore
+    /// use memcache_proto::{Request, command, extras};
     ///
-    /// let mut request = Request::new(Command::Set);
+    /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();
     /// let extras = extras::Set::new(0xdeadbeef, 3600);
-    /// *request.extras_mut() = Some(Box::new(extras));
+    /// *request.extras_mut() = Some(extras);
     ///
     /// assert!(request.extras().is_some());
     ///
-    /// let my_extras: extras::Set = **request.extras().as_ref().unwrap();
+    /// let my_extras = request.extras().as_ref().unwrap();
     /// assert_eq!(my_extras.flags(), 0xdeadbeef);
     /// assert_eq!(my_extras.expiration(), 3600);
     /// ```
 
-    pub fn extras_mut(&mut self) -> &mut Option<Box<Extras>> {
+    pub fn extras_mut(&mut self) -> &mut Option<C::RequestExtras> {
         &mut self.extras
+    }
+
+    pub fn key(&self) -> &Option<Box<K>> {
+        &self.key
+    }
+
+    pub fn key_mut(&mut self) -> &mut Option<Box<K>> {
+        &mut self.key
+    }
+
+    pub fn value(&self) -> &Option<Box<V>> {
+        &self.value
+    }
+
+    pub fn value_mut(&mut self) -> &mut Option<Box<V>> {
+        &mut self.value
     }
 
 }
 
-d 
-impl<K, V> fmt::Debug for Request<K, V>
-        where K: fmt::Debug, V: fmt::Debug {
+
+impl<C, K, V> fmt::Debug for Request<C, K, V>
+        where C: Command, C::RequestExtras: fmt::Debug, K: fmt::Debug, V: fmt::Debug {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Request")
             .field("command", &self.opcode)
@@ -222,11 +259,12 @@ impl<K, V> fmt::Debug for Request<K, V>
 }
 
 
-impl<K, V> default::Default for Request<K, V> {
+impl<C, K, V> default::Default for Request<C, K, V>
+        where C: Command + default::Default {
     fn default() -> Self {
         Request {
             magic: Magic::Request,
-            opcode: Command::Get,
+            opcode: C::default(),
             data_type: DataType::RawBytes,
             vbucket_id: 0,
             opaque: 0,
@@ -237,3 +275,6 @@ impl<K, V> default::Default for Request<K, V> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

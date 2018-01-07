@@ -1,10 +1,10 @@
 use std::io;
 use std::fmt;
 use std::default::Default;
-use std::convert::Into;
+// use std::convert::Into;
 
 use bytes::{Buf, BufMut};
-use byteorder::NetworkEndian;
+// use byteorder::NetworkEndian;
 
 use super::Extras;
 
