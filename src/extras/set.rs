@@ -1,10 +1,5 @@
-use std::io;
 use std::fmt;
 use std::default::Default;
-// use std::convert::Into;
-
-use bytes::{Buf, BufMut};
-// use byteorder::NetworkEndian;
 
 use super::Extras;
 
@@ -20,17 +15,21 @@ pub struct Set{
     expiration: u32,
 }
 
+pub type SetQ = Set;
+
 /// Extras container for `Add` requests.
 ///
 /// It is an alias for [Set](struct.Set.html) struct,
 /// see [the module documentation](struct.Set.html) for more.
 pub type Add = Set;
+pub type AddQ = Set;
 
 /// Extras container for `Replace` requests.
 ///
 /// It is an alias for [Set](struct.Set.html) struct,
 /// see [the module documentation](struct.Set.html) for more.
 pub type Replace = Set;
+pub type ReplaceQ = Set;
 
 impl Set {
 
@@ -40,18 +39,18 @@ impl Set {
             expiration,
         }
     }
+
+    pub fn flags(&self) -> u32 {
+        self.flags
+    }
+
+    pub fn expiration(&self) -> u32 {
+        self.expiration
+    }
 }
 
 
 impl Extras for Set {
-    fn read<T: Buf>(buf: &mut T) -> io::Result<Self> {
-        unimplemented!()
-    }
-
-    fn write<T: BufMut>(&self, buf: &mut T) -> io::Result<()> {
-        unimplemented!()
-    }
-
 }
 
 impl Default for Set {

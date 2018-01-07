@@ -2,7 +2,6 @@ use std::fmt;
 use std::default;
 
 use {Magic, Command, DataType};
-use extras::{Extras};
 use self::builder::Builder;
 
 mod builder;
@@ -58,6 +57,9 @@ impl<C, K, V> Request<C, K, V> where C: Command {
         }
     }
 
+    /// Creates a new builder-style object to manufacture a `Request`.
+    ///
+    /// This method returns an instance of `Builder` which can be used to create a `Request`.
     pub fn build() -> Builder<C, K, V> {
         Builder::new()
     }
@@ -204,9 +206,11 @@ impl<C, K, V> Request<C, K, V> where C: Command {
 
     /// Returns a mutable reference to the associated extras.
     ///
+    /// Extras type is defined by Request' `Command`.
+    ///
     /// # Examples
     ///
-    /// ```ignore
+    /// ```
     /// use memcache_proto::{Request, command, extras};
     ///
     /// let mut request: Request<command::Set, Vec<u8>, Vec<u8>> = Request::new();

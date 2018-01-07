@@ -1,7 +1,3 @@
-use std::io;
-use bytes::{Buf, BufMut};
-// use byteorder::NetworkEndian;
-
 use super::Extras;
 
 /// Extras container for `Get` responses.
@@ -17,7 +13,7 @@ use super::Extras;
 /// ```
 /// use memcache_proto::extras::Get;
 ///
-/// let mut extras = Get::new(0xdeadbeef);
+/// let extras = Get::new(0xdeadbeef);
 /// ```
 #[derive(Debug)]
 pub struct Get {
@@ -84,11 +80,4 @@ impl Get {
 }
 
 impl Extras for Get {
-    fn read<T: Buf>(buf: &mut T) -> io::Result<Self> {
-        unimplemented!()
-    }
-
-    fn write<T: BufMut>(&self, buf: &mut T) -> io::Result<()> {
-        unimplemented!()
-    }
 }
