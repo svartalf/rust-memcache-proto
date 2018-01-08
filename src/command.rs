@@ -7,6 +7,9 @@ use std::default;
 
 use extras;
 
+// It might seems too verbose, but we can validate `Extras` object at compile time,
+// which is better that storing `Box<Extras>` and downcasting each time in a hope that
+// everything is okay.
 pub trait Command: fmt::Debug + default::Default {
     type RequestExtras: extras::Extras;
     type ResponseExtras: extras::Extras;

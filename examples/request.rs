@@ -7,7 +7,6 @@ fn main() {
     let request: Request<_, _, ()> = Request::build()
         .command(command::Get)
         .key(Some(Box::new("hello")))
-        .extras(Some(extras))
         .finish();
 
     println!("{:#?}", request);

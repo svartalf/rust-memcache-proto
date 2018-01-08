@@ -220,8 +220,8 @@ impl<C, K, V> Request<C, K, V> where C: Command {
     /// assert!(request.extras().is_some());
     ///
     /// let my_extras = request.extras().as_ref().unwrap();
-    /// assert_eq!(my_extras.flags(), 0xdeadbeef);
-    /// assert_eq!(my_extras.expiration(), 3600);
+    /// assert_eq!(*my_extras.flags(), 0xdeadbeef);
+    /// assert_eq!(*my_extras.expiration(), 3600);
     /// ```
 
     pub fn extras_mut(&mut self) -> &mut Option<C::RequestExtras> {
