@@ -1,6 +1,6 @@
-/// Available protocol commands.
-///
-/// Reference: <https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes>
+//! Available protocol commands.
+//!
+//! Reference: <https://github.com/memcached/memcached/wiki/BinaryProtocolRevamped#command-opcodes>
 
 use std::fmt;
 use std::default;
@@ -109,14 +109,3 @@ commands! {
     TapCheckpointStart{0x46, request: (), response: ()},
     TapCheckpointEnd{0x47, request: (), response: ()},
 }
-
-//        TapConnect = 0x40,
-//        TapMutation = 0x41,
-//        TapDelete = 0x42,
-//        TapFlush = 0x43,
-//        TapOpaque = 0x44,
-//        TapVBucketSet = 0x45,
-//        TapCheckpointStart = 0x46,
-//        TapCheckpointEnd = 0x47,
-//    }
-//}

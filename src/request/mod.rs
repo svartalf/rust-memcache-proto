@@ -255,8 +255,8 @@ impl<C, K, V> fmt::Debug for Request<C, K, V>
             .field("vbucket_id", &self.vbucket_id)
             .field("opaque", &self.opaque)
             .field("cas", &self.cas)
-             .field("key", &self.key)
-             .field("value", &self.value)
+            .field("key", &self.key)
+            .field("value", &self.value)
             .field("extras", &self.extras)
             .finish()
     }
