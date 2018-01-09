@@ -10,9 +10,14 @@ keywords = ["memcached", "memcache", "binary", "protocol"]
 categories = ["database"]
 
 [dependencies]
+# TODO: Check if patch version may be dropped from these dependencies
 enum_primitive = "0.1.1"
 byteorder = "1.2.1"
 bytes = "0.4.5"
+serde = "1.0"
+
+[dev-dependencies]
+serde_json = "1.0.9"
 
 [badges]
 travis-ci = { repository = "svartalf/rust-memcache-proto", branch = "master" }

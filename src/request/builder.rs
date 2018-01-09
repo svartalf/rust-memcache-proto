@@ -35,12 +35,12 @@ impl<C, K, V> Builder<C, K, V> where C: command::Command {
         self
     }
 
-    pub fn key(mut self, value: Option<Box<K>>) -> Self {
+    pub fn key(mut self, value: Option<K>) -> Self {
         *self.0.key_mut() = value;
         self
     }
 
-    pub fn value(mut self, value: Option<Box<V>>) -> Self {
+    pub fn value(mut self, value: Option<V>) -> Self {
         *self.0.value_mut() = value;
         self
     }

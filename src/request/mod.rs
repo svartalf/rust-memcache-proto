@@ -5,6 +5,7 @@ use {Magic, Command, DataType};
 use self::builder::Builder;
 
 mod builder;
+mod io;
 
 /// Represents an Memcached request.
 ///
@@ -33,8 +34,8 @@ pub struct Request<C, K, V> where C: Command {
     cas: u64,
 
     extras: Option<C::RequestExtras>,
-    key: Option<Box<K>>,
-    value: Option<Box<V>>,
+    key: Option<K>,
+    value: Option<V>,
 }
 
 impl<C, K, V> Request<C, K, V> where C: Command {
@@ -228,19 +229,19 @@ impl<C, K, V> Request<C, K, V> where C: Command {
         &mut self.extras
     }
 
-    pub fn key(&self) -> &Option<Box<K>> {
+    pub fn key(&self) -> &Option<K> {
         &self.key
     }
 
-    pub fn key_mut(&mut self) -> &mut Option<Box<K>> {
+    pub fn key_mut(&mut self) -> &mut Option<K> {
         &mut self.key
     }
 
-    pub fn value(&self) -> &Option<Box<V>> {
+    pub fn value(&self) -> &Option<V> {
         &self.value
     }
 
-    pub fn value_mut(&mut self) -> &mut Option<Box<V>> {
+    pub fn value_mut(&mut self) -> &mut Option<V> {
         &mut self.value
     }
 
