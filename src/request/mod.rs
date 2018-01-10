@@ -22,7 +22,7 @@ mod builder;
 /// use memcache_proto::{Request, command};
 ///
 /// let mut request: Request<command::Get, &[u8], ()> = Request::new();
-/// *request.key_mut() = Some(Box::new(b"some-cached-value"));
+/// *request.key_mut() = Some(b"some-cached-value");
 /// ```
 pub struct Request<C, K, V> where C: Command {
     magic: Magic,
