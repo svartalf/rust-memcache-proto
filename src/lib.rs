@@ -1,10 +1,6 @@
 #[macro_use] extern crate enum_primitive;
 extern crate byteorder;
 extern crate bytes;
-extern crate serde;
-
-#[cfg(test)]
-extern crate serde_json;
 
 mod magic;
 pub mod command;

@@ -20,9 +20,9 @@ fn test_get() {
         0x48, 0x65, 0x6c, 0x6c,
         0x6f,
     ];
-
-    let mut serializer = serde_json::Serializer::new( Vec::<u8>::new());
-    request.to_writer(&mut serializer).unwrap();
+    let mut result: Vec<u8> = Vec::new();
+    let mut serializer = serde_json::Serializer::new( &mut result);
+    request.to_writer(&serializer).unwrap();
 //    assert_eq!(result, expected);
 //    assert_eq!(request.len(), expected.len());
 }

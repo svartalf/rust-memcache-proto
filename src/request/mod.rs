@@ -5,7 +5,6 @@ use {Magic, Command, DataType};
 use self::builder::Builder;
 
 mod builder;
-mod io;
 
 /// Represents an Memcached request.
 ///
